@@ -9,7 +9,8 @@ from Components.ActionMap import ActionMap
 from Components.config import config, configfile, ConfigSubsection, ConfigEnableDisable, getConfigListEntry, ConfigInteger, ConfigSelection, ConfigYesNo, ConfigSlider
 from Components.ConfigList import ConfigListScreen, ConfigList
 from Tools.Directories import resolveFilename, SCOPE_PLUGINS
-from enigma import iPlayableService, eServiceCenter, eTimer, eActionMap, getBoxType
+from enigma import iPlayableService, eServiceCenter, eTimer, eActionMap
+from enigma import getBoxType
 from os import system
 from Plugins.Plugin import PluginDescriptor
 from Components.ServiceEventTracker import ServiceEventTracker
@@ -328,7 +329,7 @@ def initLED():
 		forcmd = '1'
 	else:
 		forcmd = '0'
-	if BOX in ("gbquad", "gbuhdquad", "gb800ueplus", "gbquadplus", "gbultraue", "gbultraueh", "gbipbox", "gbx1", "gbx2", "gbx3", "gbx3h"):
+	if BOX in ("gbquad", "gbquad4k", "gbue4k", "gb800ueplus", "gbquadplus", "gbultraue", "gbultraueh", "gbipbox", "gbx1", "gbx2", "gbx3", "gbx3h"):
 		cmd = 'echo STB does not support to show clock in Deep Standby'
 	else:
 		cmd = 'echo '+str(forcmd)+' > /proc/stb/fp/enable_clock'
@@ -367,7 +368,7 @@ class LED_GigaSetup(ConfigListScreen, Screen):
 		self.Console = Console()
 		self["key_red"] = Button(_("Cancel"))
 		self["key_green"] = Button(_("Save"))
-		if BOX in ("gbquad", "gbuhdquad", "gb800ueplus", "gbquadplus", "gbultraue", "gbultraueh", "gbipbox", "gbx1", "gbx2", "gbx3", "gbx3h"):
+		if BOX in ("gbquad", "gbquad4k", "gbue4k", "gb800ueplus", "gbquadplus", "gbultraue", "gbultraueh", "gbipbox", "gbx1", "gbx2", "gbx3", "gbx3h"):
 			self["key_yellow"] = Button("")
 		else:
 			self["key_yellow"] = Button(_("Update Date/Time"))
@@ -387,7 +388,7 @@ class LED_GigaSetup(ConfigListScreen, Screen):
 		if config.plugins.VFD_Giga.setLed.value:
 			self.list.append(getConfigListEntry(_("Led state RUN"), config.plugins.VFD_Giga.ledRUN))
 			self.list.append(getConfigListEntry(_("Led state Standby"), config.plugins.VFD_Giga.ledSBY))
-			if BOX not in ("gbquad", "gbuhdquad", "gb800ueplus", "gb800seplus", "gbquadplus", "gbipbox", "gbultra", "gbultraue", "gbultraueh", "gbultrase", "gbx1", "gbx2", "gbx3", "gbx3h"):
+			if BOX not in ("gbquad", "gbquad4k", "gbue4k", "gb800ueplus", "gb800seplus", "gbquadplus", "gbipbox", "gbultra", "gbultraue", "gbultraueh", "gbultrase", "gbx1", "gbx2", "gbx3", "gbx3h"):
 				self.list.append(getConfigListEntry(_("Led state Deep Standby"), config.plugins.VFD_Giga.ledDSBY))
 			self.list.append(getConfigListEntry(_("Led state Record"), config.plugins.VFD_Giga.ledREC))
 			self.list.append(getConfigListEntry(_("Blink Record Led"), config.plugins.VFD_Giga.recLedBlink))
@@ -483,27 +484,6 @@ class LED_Giga:
 
 	config.misc.standbyCounter.addNotifier(standbyCounterChanged, initial_call = False)
 
-def main(menuid, **kwargs):
-	if getImageDistro() == "openvix":
-		if BOX in ('gb800se', 'gb800solo', 'gbx1', 'gbx2', 'gbx3', 'gbx3h') and menuid == "leddisplay":
-			return [(_("Display/LED"), startLED, "LED_Giga", None)]
-		elif BOX in ('gb800seplus', 'gbultra', 'gbultrase') and menuid == "display":
-			return [(_("Display/LED"), startLED, "LED_Giga", None)]
-		elif menuid == "display":
-			return [(_("LED"), startLED, "LED_Giga", None)]
-		else:
-			return []
-	else:
-		if getImageDistro() in ('openmips'):
-			if menuid != "frontpanel_menu":
-				return [ ]
-		else:
-			if menuid != "system":
-				return [ ]
-		if BOX in ('gb800se', 'gb800solo', 'gb800seplus', 'gbultra', 'gbultrase'):
-			return [(_("Display/LED"), startLED, "LED_Giga", None)]
-		else:
-			return [(_("LED"), startLED, "LED_Giga", None)]
 
 def startLED(session, **kwargs):
 	session.open(LED_GigaSetup)
@@ -560,5 +540,4 @@ def sessionstart(reason, **kwargs):
 	controlgigaLED()
 
 def Plugins(**kwargs):
-	return [ PluginDescriptor(where=[PluginDescriptor.WHERE_AUTOSTART, PluginDescriptor.WHERE_SESSIONSTART], fnc=sessionstart),
-		PluginDescriptor(name="LED_Giga", description="Change LED display settings",where = PluginDescriptor.WHERE_MENU, fnc = main) ]
+	return [ PluginDescriptor(where=[PluginDescriptor.WHERE_AUTOSTART, PluginDescriptor.WHERE_SESSIONSTART], fnc=sessionstart) ]
